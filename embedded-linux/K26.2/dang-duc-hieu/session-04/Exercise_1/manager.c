@@ -43,12 +43,19 @@ int main()
     {
         fflush(stdout);
         int pid = fork();
+        if (pid < 0)
+        {
+            perror("fork failed");
+            exit(1);
+        }
         if (pid == 0)
         {
             close(pipefd[0]);
 
             float order_total = process_order(orders[i]);
-            write(pipefd[1], &order_total, sizeof(order_total));
+            ssize_t n = write(pipefd[1], &order_total, sizeof(order_total));
+            if (n == -1)
+                perror("write error");
             close(pipefd[1]);
             exit(0);
         }
@@ -61,7 +68,10 @@ int main()
     close(pipefd[1]);
     int successful = 0;
     int failed = 0;
-
+    printf("===================================================\n");
+    printf("   ORDER PROCESSING SYSTEM — MANAGER (fork+wait)\n");
+    printf("===================================================\n");
+    printf("[MANAGER] PID: %d — spawning 3 child processes...\n\n", getpid());
     for (size_t i = 0; i < length; i++)
     {
         int status;
@@ -70,7 +80,7 @@ int main()
         if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
         {
             successful++;
-            printf("[MANAGER] waitpid(%d) — order #%d: exit code=%d → SUCCESS \n", wpid, orders[i].id, status);
+            printf("[MANAGER] waitpid(%d) — order #%d: exit code=%d → SUCCESS \n", wpid, orders[i].id, WEXITSTATUS(status));
         }
         else
         {
@@ -91,7 +101,7 @@ int main()
     printf("  Total orders    : %zu\n", length);
     printf("  Successful      : %d\n", successful);
     printf("  Failed          : %d\n", failed);
-    printf("  Total revenue   : %' .0f VND\n", total_revenue);
+    printf("  Total revenue   : %.0f VND\n", total_revenue);
     printf("===========================================\n");
 
     return 0;

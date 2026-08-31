@@ -53,13 +53,6 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    if (flock(fd, LOCK_SH) == -1)
-    {
-        perror("[SEARCHER] Error acquiring flock");
-        close(fd);
-        return 1;
-    }
-
     char line[100];
     int found = 0;
 
@@ -72,18 +65,19 @@ int main(int argc, char *argv[])
         char *name = strtok(NULL, "|");
         char *class_name = strtok(NULL, "|");
         char *gpa_str = strtok(NULL, "|");
-
+        if (!gpa_str)
+            continue;
         if (strcmp(id, target_id) == 0)
         {
-            float gpa = atoi(gpa_str);
+            float gpa = atof(gpa_str);
 
-            char *grade = "Average";
-            if (gpa >= 9.0)
+            char *grade = "Poor";
+            if (gpa >= 8.5)
                 grade = "Excellent";
-            else if (gpa >= 8.0)
+            else if (gpa >= 7.0)
                 grade = "Good";
-            else if (gpa >= 6.5)
-                grade = "Fair";
+            else if (gpa >= 5.0)
+                grade = "Average";
 
             printf("\n========== SEARCH RESULT ==========\n");
             printf("  ID      : %s\n", id);
@@ -97,7 +91,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    flock(fd, LOCK_UN);
     close(fd);
 
     if (!found)

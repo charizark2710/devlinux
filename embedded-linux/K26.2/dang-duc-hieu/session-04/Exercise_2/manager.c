@@ -25,7 +25,11 @@ int main()
     while (1)
     {
         char cmd[50];
-        scanf("%s", cmd);
+        if (scanf("%49s", cmd) != 1)
+        {
+            printf("Input error\n");
+            continue;
+        }
         if (strcmp(cmd, "q") == 0 || strcmp(cmd, "quit") == 0)
         {
             printf("[MANAGER] Exiting. Goodbye!\n");
@@ -44,7 +48,7 @@ int main()
 
         if (pid == 0)
         {
-            // add searcher as argv[0] for program name 
+            // add searcher as argv[0] for program name
             char *args[] = {"./searcher", cmd, "./students.txt", NULL};
             childPid = pid;
             execve("./searcher", args, NULL);
@@ -60,7 +64,7 @@ int main()
             printf("[MANAGER] Waiting for child (waitpid)...\n\n");
 
             int status;
-            int wpid = waitpid(childPid, &status, 0);
+            int wpid = waitpid(pid, &status, 0);
             if (WIFEXITED(status))
             {
                 int exit_code = WEXITSTATUS(status);
