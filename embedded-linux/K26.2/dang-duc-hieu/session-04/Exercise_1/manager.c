@@ -62,6 +62,7 @@ int main()
         else if (pid > 0)
         {
             pids[i] = pid;
+            printf("[MANAGER] fork() order #%zu → child PID: %d\n", i + 1, pid);
         }
     }
 
